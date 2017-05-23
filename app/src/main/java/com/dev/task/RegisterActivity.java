@@ -9,10 +9,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Registration of client.
  */
 public class RegisterActivity extends AppCompatActivity {
+
+    private boolean isValidEmailID(String email) {
+        String PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+        Pattern pattern = Pattern.compile(PATTERN);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,19 +44,18 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View v) {
                 tv_email.setText("");
                 tv_password.setText("");
-                int email_length, paswd_length;
-                email_length = ed_email.getText().toString().length();
+                int paswd_length;
                 paswd_length = ed_password.getText().toString().length();
                 boolean check_paswd, check_client, email, paswd;
                 check_paswd = ed_password.getText().toString().equals(ed_password2.getText().toString());
                 Client client = Client.getInstance();
                 check_client = ed_email.getText().toString().equals(client.getEmail());
 
-                if (email_length < 6) {
-                    ed_email.setError("Email < 6 символов.");
-                    email = false;
-                } else {
+                if (isValidEmailID(ed_email.getText().toString())){
                     email = true;
+                } else {
+                    ed_email.setError("Введите правильный email.");
+                    email = false;
                 }
 
                 if (paswd_length < 4) {
