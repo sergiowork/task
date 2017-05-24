@@ -2,6 +2,7 @@ package com.dev.task;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.util.*;
 /**
  * Registration of client.
  */
@@ -35,12 +37,21 @@ public class RegisterActivity extends AppCompatActivity {
                 tv_email.setText("");
                 tv_password.setText("");
                 int email_length, paswd_length;
+                boolean check_paswd, email, paswd, check_client;
+                Map<String, String> hashMap = new HashMap<>();
+
                 email_length = ed_email.getText().toString().length();
                 paswd_length = ed_password.getText().toString().length();
-                boolean check_paswd, check_client, email, paswd;
                 check_paswd = ed_password.getText().toString().equals(ed_password2.getText().toString());
-                Client client = Client.getInstance();
-                check_client = ed_email.getText().toString().equals(client.getEmail());
+
+                SharedPreferences pref = getSharedPreferences("prefer", MODE_PRIVATE);
+                String clientemail = pref.getString("words", "");
+                if (!hashMap.isEmpty()) {
+                    hashMap = ClientSaveLoad.strToMap(clientemail);
+                    check_client = hashMap.containsKey(ed_email.getText().toString());
+                } else {
+                    check_client = false;
+                }
 
                 if (email_length < 6) {
                     ed_email.setError("Email < 6 символов.");
@@ -75,13 +86,18 @@ public class RegisterActivity extends AppCompatActivity {
                 }
 
                 if (email && paswd) {
-                    client.setEmail(ed_email.getText().toString());
+                    String eMail = ed_email.getText().toString();
                     String md5Password = MD5.encrypt(ed_password.getText().toString());
-                    client.setPassword(md5Password);
+                    hashMap.put(eMail, md5Password);
 
-                    Intent registerIntent = new Intent(RegisterActivity.this, MainActivity.class);
-                    RegisterActivity.this.startActivity(registerIntent);
+                    pref = getSharedPreferences("prefer", MODE_PRIVATE);
+                    SharedPreferences.Editor editor = pref.edit();
+                    editor.putString("words", hashMap.toString());
+                    editor.commit();
                 }
+
+                Intent registerIntent = new Intent(RegisterActivity.this, MainActivity.class);
+                RegisterActivity.this.startActivity(registerIntent);
             }
         });
     }
