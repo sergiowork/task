@@ -2,11 +2,14 @@ package com.dev.task;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+
+import java.util.Map;
 
 /**
  * Authentication of client.
@@ -29,13 +32,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Client client = Client.getInstance();
-                String emailClient, passwordClient, enteredPassword;
-                emailClient = client.getEmail();
-                passwordClient = client.getPassword();
-                boolean email, paswd;
-                email = et_email.getText().toString().equals(emailClient);
-                enteredPassword = MD5.encrypt(et_password.getText().toString());
-                paswd = enteredPassword.equals(passwordClient);
+                String emailClient, passwordClient;
+                boolean email = false, paswd = false;
+
+                SharedPreferences pref = getSharedPreferences("pref.txt", MODE_PRIVATE);
+                String clientemail = pref.getString("words", "");
+                Map<String, String> checkhashMap = ClientSaveLoad.strToMap(clientemail);
+
+                for (Map.Entry<String, String> entry : checkhashMap.entrySet()) {
+                    emailClient = entry.getKey();
+                    passwordClient = entry.getValue();
+                   if (et_email.getText().toString().equals(emailClient) &&  MD5.encrypt(et_password.getText().toString()).equals(passwordClient)){
+                        email = true;
+                        paswd = true;
+                        client.setEmail(emailClient);
+                   }
+                }
 
                 if (email && paswd) {
                     Intent registerIntent = new Intent(MainActivity.this, ClientActivity.class);
